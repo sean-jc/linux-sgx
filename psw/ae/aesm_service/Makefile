@@ -81,7 +81,7 @@ INCLUDE += -I$(LINUX_EXTERNAL_DIR)/crypto_px/include/              \
 
 EDGER8R  := $(LINUX_SDK_DIR)/edger8r/linux/_build/Edger8r.native
 
-PROTPBUF_CXXFLAGS := -fstack-protector -fPIC -Wall -Werror
+PROTPBUF_CXXFLAGS := -fstack-protector -fPIC -Wall -Werror -DPROTOBUF_INLINE_NOT_IN_HEADERS=0
 
 ifdef DEBUG
 	PROTPBUF_CXXFLAGS += -ggdb -DDEBUG -UNDEBUG
@@ -99,7 +99,7 @@ ifdef PROFILE
         CFLAGS += -D_PROFILE_
 endif
 
-CXXFLAGS += -fPIC
+CXXFLAGS += -fPIC -DPROTOBUF_INLINE_NOT_IN_HEADERS=0
 CFLAGS := $(filter-out -fPIC -Werror, $(CFLAGS))
 LINUX_SE_WRAPPER = $(COMMON_DIR)/se_wrapper
 
