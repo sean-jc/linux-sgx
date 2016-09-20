@@ -94,11 +94,16 @@ extern "C" int init_enclave(void *enclave_base, void *ms)
     const sdk_version_t sdk_version = info->version;
     const uint64_t cpu_features = info->cpu_features;
     
-    if (sdk_version != SDK_VERSION_1_5)
+    uint64_t xfrm;
+    if (sdk_version == SDK_VERSION_1_5)
+        xfrm = get_xfeature_state();
+    else if (sdk_version == SDK_VERSION_1_6) {
+        xfrm = info->xfrm;
+    }
+    else
         return -1;
 
-    // xsave
-    uint64_t xfrm = get_xfeature_state();
+    init_xfeature_state(xfrm);
 
     // optimized libs
     if(0 != init_optimized_libs(cpu_features, xfrm))

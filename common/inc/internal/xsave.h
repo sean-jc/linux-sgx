@@ -54,6 +54,7 @@ void restore_xfeature_regs(const uint8_t *buffer);
 
 /* trts_xsave.cpp */
 uint64_t get_xfeature_state();
+void init_xfeature_state(uint64_t xfrm);
 
 
 #ifdef __cplusplus

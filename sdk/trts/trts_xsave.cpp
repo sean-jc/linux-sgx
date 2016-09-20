@@ -34,6 +34,7 @@
 #include "xsave.h"
 #include "trts_inst.h"
 #include "util.h"
+#include "se_cpu_feature_defs.h"
 
 // 'SYNTHETIC_STATE' buffer size is (512 + 64 + 256) bytes
 //   512 for fxsave buffer,
@@ -51,8 +52,23 @@ SYNTHETIC_STATE[SYNTHETIC_STATE_SIZE/sizeof(uint16_t)] = {
 
 static int g_xsave_enabled;             // flag to indicate whether xsave is enabled or not
 
-// EENTER will set xcr0 with secs.attr.xfrm, 
-// So use the xfeature mask from report instead of calling xgetbv
+// init_xfeature_state()
+//      init g_xsave_enabled based on secs.attr.xfrm.  EENTER will set xcr0 with secs.attr.xfrm,
+// Parameters:
+//      xfrm - secs.attr.xfrm value
+// Return Value:
+//      none
+void init_xfeature_state(uint64_t xfrm)
+{
+    g_xsave_enabled = XFEATURE_ENABLED_AVX(xfrm) ? 1 : 0;
+}
+
+// get_xfeature_state()
+//      read secs.attr.xfrm from an enclave by executing EREPORT
+// Parameters:
+//      none
+// Return Value:
+//      secs.attr.xfrm value from EREPORT
 uint64_t get_xfeature_state()
 {
     // target_info and report_data are useless
@@ -65,9 +81,7 @@ uint64_t get_xfeature_state()
 
     do_ereport(target_info, report_data, report);
 
-    g_xsave_enabled = (report->body.attributes.xfrm == SGX_XFRM_LEGACY) ? 0 : 1;
     uint64_t xfrm = report->body.attributes.xfrm;
-
     // no secrets in target_info, report_data, and report. no need to clear them before return
     // tlibc functions cannot be used before calling init_optimized_libs().
 
