@@ -199,9 +199,9 @@ int EnclaveCreatorHW::try_init_enclave(sgx_enclave_id_t enclave_id, enclave_css_
 
     initp.einittoken = reinterpret_cast<__u64>(launch);
     ret = ioctl(m_hdevice, SGX_IOC_ENCLAVE_INIT, &initp);
-    if (ret) {
-        SE_TRACE(SE_TRACE_WARNING, "\nISGX_IOCTL_ENCLAVE_INIT fails error = %x\n", ret);
-        return error_driver2urts(ret);
+    if (ret == -1) {
+        SE_TRACE(SE_TRACE_WARNING, "\nISGX_IOCTL_ENCLAVE_INIT fails error = %x\n", errno);
+        return errno;
     }
 
     //register signal handler
