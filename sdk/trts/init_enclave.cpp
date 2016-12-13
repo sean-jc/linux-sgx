@@ -130,7 +130,9 @@ sgx_status_t do_init_enclave(void *ms)
     {
         return SGX_ERROR_UNEXPECTED;
     }
+#ifndef SGX_DRIVER_TEST
     memset(GET_PTR(void, enclave_base, g_global_data.heap_offset), 0, g_global_data.heap_size);
+#endif
     g_enclave_state = ENCLAVE_INIT_DONE;
     return SGX_SUCCESS;
 }

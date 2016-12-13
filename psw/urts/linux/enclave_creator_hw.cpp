@@ -155,6 +155,8 @@ int EnclaveCreatorHW::create_enclave(secs_t *secs, sgx_enclave_id_t *enclave_id,
     *enclave_id = ((uint64_t)g_eid_high << 32) | g_eid_low;
     *start_addr = secs->base;
 
+    SE_TRACE(SE_TRACE_WARNING, "create_enclave ID=%ld, counter=%d\n", *enclave_id, g_eid_low);
+
     return SGX_SUCCESS;
 }
 
@@ -204,6 +206,7 @@ int EnclaveCreatorHW::try_init_enclave(sgx_enclave_id_t enclave_id, enclave_css_
         return errno;
     }
 
+#ifndef SGX_DRIVER_TEST
     //register signal handler
     se_mutex_lock(&m_sig_mutex);
     if(false == m_sig_registered)
@@ -212,7 +215,7 @@ int EnclaveCreatorHW::try_init_enclave(sgx_enclave_id_t enclave_id, enclave_css_
         m_sig_registered = true;
     }
     se_mutex_unlock(&m_sig_mutex);
-
+#endif
     return SGX_SUCCESS;
 }
 

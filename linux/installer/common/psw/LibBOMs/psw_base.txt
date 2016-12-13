@@ -1,0 +1,6 @@
+DeliveryName	InstallName	FileCheckSum	FileFeature	FileOwner
+<deliverydir>/build/linux/le_prod_css.bin	<installdir>/package/le_prod_css.bin	0	main	STP
+<deliverydir>/build/linux/libsgx_le.signed.so	<installdir>/package/libsgx_le.signed.so	0	main	STP
+<deliverydir>/linux/installer/common/psw/installLib.sh	<installdir>/scripts/install.sh	0	main	STP
+<deliverydir>/linux/installer/common/psw/Makefile	<installdir>/Makefile	0	main	STP
+<deliverydir>/psw/ae/ae_lib/data/white_list_cert_to_be_verify.bin	<installdir>/package/ae_lib/data/white_list_cert_to_be_verify.bin	0	main	STP

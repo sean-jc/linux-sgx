@@ -89,4 +89,12 @@ typedef enum _status_t
 
 } sgx_status_t;
 
+typedef enum
+{
+	SE_TRACE_ERROR,
+	SE_TRACE_WARNING,
+	SE_TRACE_NOTICE,
+	SE_TRACE_DEBUG
+} sgx_trace_t;
+
 #endif

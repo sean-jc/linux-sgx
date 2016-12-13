@@ -40,11 +40,19 @@ else
 endif
 
 .PHONY: all
+ifndef SGX_DRIVER_TEST
 all: $(CURL_RESULT) LE AESM COPY_PVE_QE_PCE| $(BUILD_DIR)
+else
+all: LE AE_LIB | $(BUILD_DIR)
+endif
 
 .PHONY: COPY_PVE_QE_PCE
 COPY_PVE_QE_PCE: | $(BUILD_DIR)
 	$(CP) data/prebuilt/* $(BUILD_DIR)
+
+.PHONY: AE_LIB
+AE_LIB: LE | $(BUILD_DIR)
+	$(MAKE) -C ae_lib
 
 .PHONY: AESM
 AESM: LE | $(BUILD_DIR)
@@ -63,6 +71,7 @@ $(BUILD_DIR):
 clean::
 	$(MAKE) -C le                              clean
 	$(MAKE) -C aesm_service/                   clean
+	$(MAKE) -C ae_lib/                         clean
 	$(RM)   common/version.cpp
 
 .PHONY: rebuild

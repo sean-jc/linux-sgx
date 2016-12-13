@@ -56,7 +56,11 @@ LIBTLIBCXX := $(BUILD_DIR)/libsgx_tstdcxx.a
 LIBTSE     := $(BUILD_DIR)/libsgx_tservice.a
 
 .PHONY: all
+ifndef SGX_DRIVER_TEST
 all: tstdc tstdcxx tservice trts tcrypto tkey_exchange ukey_exchange ptrace sample_crypto simulation signtool edger8r tsetjmp
+else
+all: tstdc tservice trts tcrypto ptrace signtool edger8r tsetjmp
+endif
 
 # ---------------------------------------------------
 #  tstdc

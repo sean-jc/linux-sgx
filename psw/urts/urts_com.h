@@ -328,12 +328,18 @@ sgx_status_t _create_enclave(const bool debug, se_file_handle_t pfile, se_file_t
     }
 #endif
 
+#ifndef SGX_DRIVER_TEST
     //Need to set the whole misc_attr instead of just secs_attr.
     do {
         ret = __create_enclave(parser, mh->base_addr, metadata, file, debug, lc, prd_css_file, enclave_id,
                                misc_attr);
         //SGX_ERROR_ENCLAVE_LOST caused by initializing enclave while power transition occurs
     } while(SGX_ERROR_ENCLAVE_LOST == ret);
+#else
+    if (!lc->is_launch_updated())
+        ret = __create_enclave(parser, mh->base_addr, metadata, file, debug, lc, prd_css_file, enclave_id,
+                               misc_attr);
+#endif
 
     if(SE_ERROR_INVALID_LAUNCH_TOKEN == ret || SGX_ERROR_INVALID_CPUSVN == ret)
         ret = SGX_ERROR_UNEXPECTED;
@@ -361,6 +367,12 @@ clean_return:
     if(lc != NULL)
         delete lc;
     return (sgx_status_t)ret;
+}
+
+
+extern "C" void sgx_trace_level(const sgx_trace_t trace_level)
+{
+    g_sgx_trace_level = trace_level;
 }
 
 extern "C" sgx_status_t sgx_destroy_enclave(const sgx_enclave_id_t enclave_id)

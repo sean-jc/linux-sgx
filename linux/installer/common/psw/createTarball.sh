@@ -59,9 +59,17 @@ source ${SCRIPT_DIR}/installConfig.${ARCH}
 # Fetch the gen_source script
 cp ${LINUX_INSTALLER_COMMON_DIR}/gen_source/gen_source.py ${SCRIPT_DIR}
 
+if [ -z ${SGX_DRIVER_TEST+x} ]; then
+    BOM_DIR=BOMs;
+else
+    BOM_DIR=LibBOMs;
+fi
+
+echo ${BOM_DIR}/psw_base.txt
+
 # Copy the files according to the BOM
-python ${SCRIPT_DIR}/gen_source.py --bom=BOMs/psw_base.txt
-python ${SCRIPT_DIR}/gen_source.py --bom=BOMs/psw_${ARCH}.txt --cleanup=false
+python ${SCRIPT_DIR}/gen_source.py --bom=${BOM_DIR}/psw_base.txt
+python ${SCRIPT_DIR}/gen_source.py --bom=${BOM_DIR}/psw_${ARCH}.txt --cleanup=false
 python ${SCRIPT_DIR}/gen_source.py --bom=../licenses/BOM_license.txt --cleanup=false
 
 # Create the tarball

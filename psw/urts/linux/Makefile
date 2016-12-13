@@ -31,9 +31,11 @@
 
 include ../../../buildenv.mk
 
+ifndef SGX_DRIVER_TEST
 ifndef DEBUG
 CXXFLAGS += -DDISABLE_TRACE
 CFLAGS += -DDISABLE_TRACE
+endif
 endif
 
 CXXFLAGS += -fPIC -Werror
@@ -54,7 +56,12 @@ INC += -I$(COMMON_DIR)/inc                \
        -I$(VTUNE_DIR)/sdk/src/ittnotify 
 
 LDFLAGS := -lwrapper
+
+ifndef SGX_DRIVER_TEST
 LDFLAGS += -Wl,-Bdynamic -lsgx_uae_service
+else
+LDFLAGS += -Wl,-Bdynamic
+endif
 
 LDFLAGS += -L$(VTUNE_DIR)/sdk/src/ittnotify -littnotify -ldl
 
@@ -107,9 +114,15 @@ LIBURTS          := libsgx_urts.so
 LIBURTS_INTERNAL := liburts_internal.a
 
 .PHONY: all
+ifndef SGX_DRIVER_TEST
 all: $(LIBWRAPPER) uae_service ittnotify $(LIBURTS) $(LIBURTS_INTERNAL) | $(BUILD_DIR)
 	@$(CP) $(LIBURTS)          $|
 	@$(CP) $(LIBURTS_INTERNAL) $|
+else
+all: $(LIBWRAPPER) ittnotify $(LIBURTS) $(LIBURTS_INTERNAL) | $(BUILD_DIR)
+	@$(CP) $(LIBURTS)          $|
+	@$(CP) $(LIBURTS_INTERNAL) $|
+endif
 
 $(LIBURTS_INTERNAL): $(INTERNAL_OBJ)
 	$(CP) $(COMMON_DIR)/se_wrapper/libwrapper.a $@

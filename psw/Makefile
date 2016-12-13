@@ -40,7 +40,11 @@ include ../buildenv.mk
 
 .PHONY: all uae_service urts AE clean rebuld
 
+ifndef SGX_DRIVER_TEST
 all: uae_service urts AE
+else
+all: urts AE
+endif
 
 urts:
 	$(MAKE) -C urts/linux/

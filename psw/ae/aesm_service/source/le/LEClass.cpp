@@ -37,7 +37,10 @@
 #include "ae_ipp.h"
 #include "util.h"
 #include "service_enclave_mrsigner.hh"
-#include "aesm_long_lived_thread.h"
+
+#ifdef SGX_DRIVER_TEST
+#include "ae_lib.h"
+#endif
 
 extern "C" sgx_status_t sgx_create_le(const char *file_name, const char *prd_css_file_name, const int debug, sgx_launch_token_t *launch_token, int *launch_token_updated, sgx_enclave_id_t *enclave_id, sgx_misc_attribute_t *misc_attr, int *production_loaded);
 
@@ -86,7 +89,11 @@ void CLEClass::load_white_cert_list()
     load_verified_white_cert_list();
     load_white_cert_list_to_be_verify();//If this version is older than previous one, it will not be loaded
 }
+
+#ifndef SGX_DRIVER_TEST
+
 #include <time.h>
+#include "aesm_long_lived_thread.h"
 #include "endpoint_select_info.h"
 #include "stdint.h"
 
@@ -130,6 +137,8 @@ ae_error_t CLEClass::update_white_list_by_url()
     }
     return ret;
 }
+
+#endif
 
 ae_error_t CLEClass::load_verified_white_cert_list()
 {
@@ -330,8 +339,10 @@ int CLEClass::get_launch_token(
 
     if(SGX_SUCCESS!=ret)
         return sgx_error_to_ae_error(ret);
+#ifndef SGX_DRIVER_TEST
     if (status == LE_WHITELIST_UNINITIALIZED_ERROR || status == LE_INVALID_PRIVILEGE_ERROR){
         start_white_list_thread(0);//try to query white list unblocking
     }
+#endif
     return status;
 }

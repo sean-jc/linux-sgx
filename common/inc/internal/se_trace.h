@@ -38,19 +38,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include "sgx_error.h"
 
-typedef enum
-{
-	SE_TRACE_ERROR,
-	SE_TRACE_WARNING,
-	SE_TRACE_NOTICE,
-	SE_TRACE_DEBUG
-} se_trace_t;
-
-#ifndef SE_DEBUG_LEVEL
-/* Each module need define their own SE_DEBUG_LEVEL */
-#define SE_DEBUG_LEVEL SE_TRACE_ERROR
-#endif
+extern sgx_trace_t g_sgx_trace_level;
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,7 +59,7 @@ int se_trace_internal(int debug_level, const char *fmt, ...);
 #else /* DISABLE_TRACE */
 #define se_trace(debug_level, fmt, ...)     \
     do {                                    \
-        if(debug_level <= SE_DEBUG_LEVEL)   \
+        if(debug_level <= g_sgx_trace_level)   \
             se_trace_internal(debug_level, fmt, ##__VA_ARGS__);       \
     }while(0)
 

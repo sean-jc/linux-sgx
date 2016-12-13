@@ -39,6 +39,9 @@ output/
 /psw/ae/common/proto/messages.pb.h
 /psw/ae/common/version.cpp
 
+#AE library generated files
+/psw/ae/ae_lib/data/
+
 #misc executables
 /sdk/sign_tool/SignTool/sgx_sign
 /sdk/simulation/SEConfigureCPUSVN/linux/sgx_config_cpusvn

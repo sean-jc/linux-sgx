@@ -77,6 +77,10 @@ ifdef SE_SIM
     COMMON_FLAGS += -DSE_SIM
 endif
 
+ifdef SGX_DRIVER_TEST
+    COMMON_FLAGS += -DSGX_DRIVER_TEST
+endif
+
 # turn on compiler warnings as much as possible
 COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
 		-Waddress -Wsequence-point -Wformat-security \
@@ -147,6 +151,9 @@ CXXFLAGS += $(COMMON_FLAGS)
 # will hide all symbols from dynamic symbol table even if they are marked
 # as `global' in the LD version script.
 ENCLAVE_CFLAGS   = -ffreestanding -nostdinc -fvisibility=hidden -fpie
+ifdef SGX_DRIVER_TEST
+    ENCLAVE_CFLAGS += -DSGX_DRIVER_TEST
+endif
 ENCLAVE_CXXFLAGS = $(ENCLAVE_CFLAGS) -nostdinc++
 ENCLAVE_LDFLAGS  = -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
                    -Wl,-pie,-eenclave_entry -Wl,--export-dynamic  \

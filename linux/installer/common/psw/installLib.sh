@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright (C) 2011-2016 Intel Corporation. All rights reserved.
 #
@@ -29,30 +30,47 @@
 #
 #
 
-include scripts/installConfig
 
-SOURCE_FOLDER=package
-SCRIPTS_FOLDER=scripts
+set -e
 
-INSTALL_PATH=$(shell readlink -m $(DESTDIR)/$(SGX_PACKAGES_PATH)/$(PSW_PKG_NAME))
-SOURCE_INSTALL_PATH=$(INSTALL_PATH)
-SCRIPTS_INSTALL_PATH=$(INSTALL_PATH)/$(SCRIPTS_FOLDER)
-PSW_LIB_PATH=$(SOURCE_INSTALL_PATH)/$(LIB_DIR)
+SCRIPT_DIR=$(dirname "$0")
+source ${SCRIPT_DIR}/installConfig
 
-default:
+PSW_DST_PATH=${SGX_PACKAGES_PATH}/${PSW_PKG_NAME}
+AE_LIB_PATH=$PSW_DST_PATH/ae_lib
 
-install:
-	install -d $(SOURCE_INSTALL_PATH)
-	install -d $(SCRIPTS_INSTALL_PATH)
-	install -d $(DESTDIR)/usr/lib
-	cp -r $(SOURCE_FOLDER)/* $(SOURCE_INSTALL_PATH)
-	install $(SCRIPTS_FOLDER)/* $(SCRIPTS_INSTALL_PATH)
-ifndef SGX_DRIVER_TEST
-	mv $(PSW_LIB_PATH)/libsgx_uae_service.so $(DESTDIR)/usr/lib
-else
-	mv $(PSW_LIB_PATH)/libsgx_ae.so $(DESTDIR)/usr/lib
-	mv $(SOURCE_INSTALL_PATH)/libsgx_le.signed.so $(DESTDIR)/usr/lib
-	mv $(SOURCE_INSTALL_PATH)/le_prod_css.bin $(DESTDIR)/usr/lib
-endif
-	mv $(PSW_LIB_PATH)/libsgx_urts.so $(DESTDIR)/usr/lib
-	rmdir $(PSW_LIB_PATH)
+# /var/opt/aesmd is hardcoded into aesm_util.cpp
+mkdir -p /var/opt/aesmd
+cp -rf $AE_LIB_PATH/data /var/opt/aesmd/
+rm -rf $AE_LIB_PATH
+
+cat > $PSW_DST_PATH/uninstall.sh <<EOF
+#!/usr/bin/env bash
+
+if test \$(id -u) -ne 0; then
+    echo "Root privilege is required."
+    exit 1
+fi
+
+# Removing AESM internal folder
+rm -fr /var/opt/aesmd
+
+# Removing runtime libraries
+rm -f /usr/lib/libsgx_ae.so
+rm -f /usr/lib/libsgx_le.signed.so
+rm -f /usr/lib/le_prod_css.bin
+rm -f /usr/lib/libsgx_urts.so
+
+# Removing AE lib folder
+rm -fr $PSW_DST_PATH
+EOF
+
+chmod +x $PSW_DST_PATH/uninstall.sh
+
+echo -e "\nuninstall.sh script generated in $PSW_DST_PATH\n"
+
+echo -e "Installation is successful!"
+
+rm -fr $PSW_DST_PATH/scripts
+
+exit 0
