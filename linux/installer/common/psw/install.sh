@@ -52,7 +52,8 @@ cp -rf $AESM_PATH/conf/aesmd.conf /etc/aesmd.conf
 rm -rf $AESM_PATH/conf
 chmod  0644 /etc/aesmd.conf
 chown -R aesmd /var/opt/aesmd
-chmod 0750 /var/opt/aesmd
+chmod 0755 /var/opt/aesmd
+chmod 0750 /var/opt/aesmd/data
 
 if [ -d /run/systemd/system ]; then
     AESMD_NAME=aesmd.service
