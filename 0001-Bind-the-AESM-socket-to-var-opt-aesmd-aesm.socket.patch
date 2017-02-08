@@ -1,0 +1,107 @@
+From 8f9ad84226aabc8cc2e589c483a6efddccd556b5 Mon Sep 17 00:00:00 2001
+From: Sean Christopherson <sean.j.christopherson@intel.com>
+Date: Tue, 7 Feb 2017 12:51:44 -0800
+Subject: [PATCH 1/2] Bind the AESM socket to /var/opt/aesmd/aesm.socket
+
+Exposing sockets to Docker containers is typically done via bind
+mounts, which does not work for abstract sockets since they don't
+exist in the file system.
+
+Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
+---
+ linux/installer/common/psw/install.sh                      |  3 ++-
+ .../source/aesm_wrapper/src/UnixServerSocket.cpp           | 14 ++++++++++----
+ psw/ae/common/inc/Config.h                                 |  2 +-
+ psw/ae/common/src/UnixCommunicationSocket.cpp              |  3 +--
+ 4 files changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/linux/installer/common/psw/install.sh b/linux/installer/common/psw/install.sh
+index 8b5be3c..3ae359e 100755
+--- a/linux/installer/common/psw/install.sh
++++ b/linux/installer/common/psw/install.sh
+@@ -52,7 +52,8 @@ cp -rf $AESM_PATH/conf/aesmd.conf /etc/aesmd.conf
+ rm -rf $AESM_PATH/conf
+ chmod  0644 /etc/aesmd.conf
+ chown -R aesmd /var/opt/aesmd
+-chmod 0750 /var/opt/aesmd
++chmod 0755 /var/opt/aesmd
++chmod 0750 /var/opt/aesmd/data
+ 
+ if [ -d /run/systemd/system ]; then
+     AESMD_NAME=aesmd.service
+diff --git a/psw/ae/aesm_service/source/aesm_wrapper/src/UnixServerSocket.cpp b/psw/ae/aesm_service/source/aesm_wrapper/src/UnixServerSocket.cpp
+index a9228f8..15d89ad 100644
+--- a/psw/ae/aesm_service/source/aesm_wrapper/src/UnixServerSocket.cpp
++++ b/psw/ae/aesm_service/source/aesm_wrapper/src/UnixServerSocket.cpp
+@@ -28,6 +28,8 @@
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  */
++#include <sstream>
++
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include <sys/un.h>
+@@ -45,8 +47,10 @@ UnixServerSocket::UnixServerSocket(const char* socketbase, const unsigned int cl
+ }
+ 
+ UnixServerSocket::~UnixServerSocket() {
+-    if (mSocket > 0)
++    if (mSocket > 0) {
++        unlink(mSocketBase);
+         close(mSocket);
++    }
+ }
+ 
+ void UnixServerSocket::init()
+@@ -64,15 +68,17 @@ void UnixServerSocket::init()
+ 
+     server_address.sun_family = AF_UNIX;
+     memset(server_address.sun_path, 0, sizeof(server_address.sun_path));
+-    // leave the first byte to 0 in order to have an abstract socket address
+-    strncpy(server_address.sun_path + 1, mSocketBase, sizeof(server_address.sun_path) - 1);
++    strncpy(server_address.sun_path, mSocketBase, sizeof(server_address.sun_path));
+     unlink(server_address.sun_path);
+ 
+     socklen_t server_len = sizeof(server_address);
+     int rc = bind(mSocket, (sockaddr*)&server_address, server_len);
+     if (rc < 0) {
+         close(mSocket);
+-        throw("Failed to create socket");
++
++        std::stringstream buffer;
++        buffer << "Failed to bind socket to " << mSocketBase;
++        throw(buffer.str().c_str());
+     }
+ 
+     rc = listen(mSocket, 32);
+diff --git a/psw/ae/common/inc/Config.h b/psw/ae/common/inc/Config.h
+index 801fd81..4757f0e 100644
+--- a/psw/ae/common/inc/Config.h
++++ b/psw/ae/common/inc/Config.h
+@@ -33,7 +33,7 @@
+ 
+ 
+ #ifndef CONFIG_SOCKET_PATH
+-    #define CONFIG_SOCKET_PATH "sgx_aesm_socket_base"
++    #define CONFIG_SOCKET_PATH "/var/opt/aesmd/aesm.socket"
+ #endif /* CONFIG_SOCKET_PATH */
+ 
+ 
+diff --git a/psw/ae/common/src/UnixCommunicationSocket.cpp b/psw/ae/common/src/UnixCommunicationSocket.cpp
+index d261a8b..bc76e71 100644
+--- a/psw/ae/common/src/UnixCommunicationSocket.cpp
++++ b/psw/ae/common/src/UnixCommunicationSocket.cpp
+@@ -214,8 +214,7 @@ bool UnixCommunicationSocket::init()
+         memset(&serv_addr, 0, sizeof(struct sockaddr_un));
+         serv_addr.sun_family = AF_UNIX;
+         memset(serv_addr.sun_path, 0, sizeof(serv_addr.sun_path));
+-        // leave the first byte to 0 in order to have an abstract socket address
+-        strncpy(serv_addr.sun_path + 1, mSocketBase, sizeof(serv_addr.sun_path) - 1);
++        strncpy(serv_addr.sun_path, mSocketBase, sizeof(serv_addr.sun_path));
+ 
+         if( connect(mSocket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0)
+         {
+-- 
+2.7.4
+
