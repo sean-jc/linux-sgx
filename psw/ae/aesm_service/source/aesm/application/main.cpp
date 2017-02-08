@@ -74,13 +74,13 @@ void signal_handler(int sig)
 }
 
 int main() {
-    if(daemon(0, 0) < 0)
-    {
-        AESM_LOG_INIT();
-        AESM_LOG_FATAL("Fail to set daemon.");
-        AESM_LOG_FINI();
-        exit(1);
-    }
+    // if(daemon(0, 0) < 0)
+    // {
+    //     AESM_LOG_INIT();
+    //     AESM_LOG_FATAL("Fail to set daemon.");
+    //     AESM_LOG_FINI();
+    //     exit(1);
+    // }
     CURLcode curl_code = curl_global_init(CURL_GLOBAL_DEFAULT);
     if(curl_code!=CURLE_OK){
         curl_initialized = false;
