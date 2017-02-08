@@ -57,18 +57,7 @@ INCLUDE += -I$(LINUX_EXTERNAL_DIR)/epid     \
            -I$(IPC_COMMON_PROTO_DIR) \
            -I$(LINUX_PSW_DIR)/ae/aesm_service/source
 
-CXXFLAGS += -fPIC -Werror -DPROTOBUF_INLINE_NOT_IN_HEADERS=0
-PROTPBUF_CXXFLAGS := -fstack-protector -fPIC -Wall -Werror
-ifdef DEBUG
-	PROTPBUF_CXXFLAGS += -ggdb -DDEBUG -UNDEBUG
-else
-	PROTPBUF_CXXFLAGS += -O2 -UDEBUG -DNDEBUG
-endif
-ifeq ($(ARCH), x86)
-	PROTPBUF_CXXFLAGS += -m32
-else
-	PROTPBUF_CXXFLAGS += -m64
-endif
+CXXFLAGS += -fPIC -Werror -DPROTOBUF_INLINE_NOT_IN_HEADERS=0 -Wno-unused-parameter
 
 EXTERNAL_LIB += -lprotobuf 
  
