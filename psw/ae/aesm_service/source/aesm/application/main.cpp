@@ -73,8 +73,12 @@ void signal_handler(int sig)
     }
 }
 
-int main() {
-    if(daemon(0, 0) < 0)
+int main(int argc, char *argv[]) {
+    // The only command line option that is supported is --no-daemon,
+    // so for now we can hardcode a check against argv[1], which will
+    // be NULL if no argument is provided.
+    bool noDaemon = (strcmp(argv[1], "--no-daemon") == 0);
+    if(!noDaemon && daemon(0, 0) < 0)
     {
         AESM_LOG_INIT();
         AESM_LOG_FATAL("Fail to set daemon.");
