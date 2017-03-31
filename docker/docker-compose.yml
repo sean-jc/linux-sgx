@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  aesm:
+    build: ./aesm
+    image: aesm
+    devices:
+      - /dev/isgx
+    volumes:
+      - /tmp/aesmd:/var/run/aesmd
+    stdin_open: true
+    tty: true
+
+  sample:
+    build: ./sample
+    image: sample
+    depends_on:
+      - aesm
+    devices:
+      - /dev/isgx
+    volumes:
+      - /tmp/aesmd:/var/run/aesmd
+    stdin_open: true
+    tty: true
